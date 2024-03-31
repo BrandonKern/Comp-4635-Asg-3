@@ -7,13 +7,17 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
+// import java.util.Scanner;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @SuppressWarnings("serial")
 public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements CrissCrossPuzzleServer {
     private Map<Integer, Game> games = new HashMap<>();
     private WordRepo wordRepo;
     private UserAccounts userAccounts;
+    private static final long serialVersionUID = 1L;
+    private static final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     /**
      * Name: CrissCrossPuzzleServerImpl
@@ -74,6 +78,7 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
 
     @Override
     public boolean endGame(int user_id) throws RemoteException {
+        lock.writeLock().lock();
         Game game = games.get(user_id);
         if (game != null) {
             return true;
@@ -82,11 +87,14 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
                 return true;
             }
         }
+        lock.writeLock().unlock();
         return false;
     }
 
     @Override
     public String startGame(int user_id, int difficulty, int failed_attempts) throws RemoteException {
+        lock.writeLock().lock();
+
         Game game = games.get(user_id);
         if (game != null) {
             if (games.remove(user_id) != null) {
@@ -98,6 +106,8 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
         }
         game = new Game(failed_attempts, difficulty, wordRepo);
         games.put(user_id, game);
+        lock.writeLock().unlock();
+
         if (games.get(user_id) != null) {
             System.out.println("Successfully created");
         } else {
@@ -110,7 +120,9 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
 
     @Override
     public boolean guessLetter(int user_id, char letter) throws RemoteException {
+        lock.readLock().lock();
         Game game = games.get(user_id);
+        lock.readLock().unlock();
         if (game != null) {
             return game.guessLetter(letter);
         } else {
@@ -121,7 +133,9 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
 
     @Override
     public boolean guessWord(int user_id, String word) throws RemoteException {
+        lock.readLock().lock();
         Game game = games.get(user_id);
+        lock.readLock().unlock();
         if (game != null) {
             return game.guessWord(word);
         } else {
@@ -132,7 +146,9 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
 
     @Override
     public boolean checkWin(int user_id) {
+        lock.readLock().lock();
         Game game = games.get(user_id);
+        lock.readLock().unlock();
         if (game != null) {
             return game.checkWin();
         } else {
@@ -143,7 +159,9 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
 
     @Override
     public boolean checkLoss(int user_id) {
+        lock.readLock().lock();
         Game game = games.get(user_id);
+        lock.readLock().unlock();
         if (game != null) {
             return game.checkLoss();
         } else {
@@ -154,7 +172,9 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
 
     @Override
     public String displayGame(int userId) throws RemoteException {
+        lock.readLock().lock();
         Game game = games.get(userId);
+        lock.readLock().unlock();
         if (game != null) {
             return game.toString();
         } else {
