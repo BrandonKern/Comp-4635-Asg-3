@@ -6,6 +6,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 // import java.util.Scanner;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -18,6 +19,7 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
     private UserAccounts userAccounts;
     private static final long serialVersionUID = 1L;
     private static final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private HashMap <Integer, ClientStateRecord> clientRecords = new HashMap<>();
 
     /**
      * Name: CrissCrossPuzzleServerImpl
@@ -37,6 +39,37 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
             throw new RuntimeException(e);
         }
     }
+
+    public synchronized void keepMyNameWhileAlive(int user_id) throws RemoteException {
+        if (!clientRecords.containsKey(user_id)) {
+            clientRecords.put(user_id, new ClientStateRecord(user_id));
+        }
+    }
+
+    public synchronized boolean heartBeat(int user_id) throws RemoteException {
+		ClientStateRecord r = clientRecords.get(user_id);
+		if (r != null) {
+			r.setIsActive(true);
+		}
+		return false;
+	}
+
+    //is not a remote function call (called by server)
+    public synchronized Iterator<Map.Entry<Integer, ClientStateRecord>> getEntrySet () {
+		return clientRecords.entrySet().iterator();
+	}
+
+    //is not a remote function call (called by server)
+    public synchronized void removeClientRecord(int user_id) {
+        try {
+            setUserInactive(user_id);
+            endGame(user_id);
+        } catch (RemoteException e) {
+            System.out.print("unable to remove client state in system");
+            e.printStackTrace();
+        }
+		clientRecords.remove(user_id);
+	}
 
     @Override
     public String addWord(String word) throws RemoteException {
@@ -171,9 +204,9 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
     }
 
     @Override
-    public String displayGame(int userId) throws RemoteException {
+    public String displayGame(int user_id) throws RemoteException {
         lock.readLock().lock();
-        Game game = games.get(userId);
+        Game game = games.get(user_id);
         lock.readLock().unlock();
         if (game != null) {
             return game.toString();
@@ -184,8 +217,8 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
     }
 
     @Override
-    public boolean setUserInactive(String user_id) throws RemoteException {
-        return userAccounts.setUserInactive(user_id);
+    public boolean setUserInactive(int user_id) throws RemoteException {
+        return userAccounts.setUserInactive(String.valueOf(user_id));
     }
 }
 

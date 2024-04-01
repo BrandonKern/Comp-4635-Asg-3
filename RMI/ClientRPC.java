@@ -4,7 +4,9 @@ import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.sql.Time;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 /*
 * The ClientRPC class provides functionality for the client side of the CrissCrossPuzzle game using Remote Method Invocation (RMI).
@@ -13,13 +15,36 @@ import java.util.Scanner;
 */
 
 public class ClientRPC {
+    private static final int TIMELIMIT_SECONDS = 5;
+    static CrissCrossPuzzleServer connection;
+    static int user_id;
+
+    public void run () {
+        while(true) {
+            try {
+                TimeUnit.SECONDS.sleep(TIMELIMIT_SECONDS);
+                    connection.heartBeat(user_id);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    break;
+                }
+        }
+    }
+
     public static void main(String [] args)
     {
         try {
+
             Scanner scan = new Scanner(System.in);
+
+            user_id = loginPrompt(scan);
+
             String Url = "rmi://" + InetAddress.getLocalHost().getHostAddress() + ":1099/CrissCrossPuzzleServer";
-            CrissCrossPuzzleServer connection = (CrissCrossPuzzleServer) Naming.lookup(Url);
-            primaryHandler(scan,connection);
+            connection = (CrissCrossPuzzleServer) Naming.lookup(Url);
+
+            connection.keepMyNameWhileAlive(user_id);
+
+            primaryHandler(scan); //primaryHandler(scan,connection);
 
 
         } catch (UnknownHostException | MalformedURLException | NotBoundException | RemoteException e) {
@@ -36,7 +61,7 @@ public class ClientRPC {
      * There is also a restriction, where if the user's login is already active, then they cannot proceed with the game.
      * RemoteException if an error occurs during remote method invocation
      */
-    public static int loginPrompt( Scanner scan, CrissCrossPuzzleServer connection) throws RemoteException {
+    public static int loginPrompt( Scanner scan) throws RemoteException {
 
 
         System.out.println(" Hi Welcome to the Best Crossword Puzzle of the Century!!! The Puzzler");
@@ -44,13 +69,9 @@ public class ClientRPC {
         int login_id = scan.nextInt();
          //System.out.print(connection.login(login_id));
 
-        if (connection.checkUser(login_id))
-        {
-            return login_id;
-        }
-
-        return -1;
-
+        
+        
+        return login_id;
     }
 
     /*
@@ -92,7 +113,7 @@ public class ClientRPC {
      *  <G> - Start game
      *  <Q> - Quit
      */
-    public static void promptBeforeStartingGame(int user_id,  Scanner scan, CrissCrossPuzzleServer connection) throws RemoteException {
+    public static void promptBeforeStartingGame(Scanner scan) throws RemoteException {
         String option = "";
         do {
             System.out.println("\nPlease choose one of the following options:");
@@ -145,10 +166,10 @@ public class ClientRPC {
                     break;
 
                 case "G":
-                    gameHandler( user_id,scan,connection);
+                    gameHandler(scan);
                     break;
                 case "Q":
-                    System.out.println("User quit is: " + connection.setUserInactive(String.valueOf(user_id)));
+                    System.out.println("User quit is: " + connection.setUserInactive(user_id));
                     break;
 
 
@@ -166,11 +187,9 @@ public class ClientRPC {
      * Output: None (void). Calls functions to display login prompt, greet the user, and prompt for game options.
      * RemoteException if an error occurs during remote method invocation
      */
-    public static void primaryHandler( Scanner scan, CrissCrossPuzzleServer connection) throws RemoteException {
-        int id = loginPrompt( scan,connection);
-
-       if (id != -1) {
-         promptBeforeStartingGame(id, scan,connection);
+    public static void primaryHandler( Scanner scan) throws RemoteException {
+        if (connection.checkUser(user_id)) {
+            promptBeforeStartingGame(scan);
         }
 
         else { System.out.print("User is already active or error occured in registering the user."); }
@@ -188,7 +207,7 @@ public class ClientRPC {
      * Details: This function prompts the user to specify the difficulty level and the number of failed attempts allowed for the game. It then sends a request to the server with these parameters to initialize the game. After setting up the game, it enters a loop where it displays the game menu to the user and handles user inputs until the game is completed or the user quits.
      * RemoteException if an error occurs during remote method invocation
      */
-    public static void gameHandler( int user_id, Scanner scan, CrissCrossPuzzleServer connection) throws RemoteException {
+    public static void gameHandler(Scanner scan) throws RemoteException {
         int[] arr = startGamePrompt(scan);
 
         //Sending start to server and reading/displaying game puzzle
@@ -198,10 +217,10 @@ public class ClientRPC {
 
         Boolean exit = false;
         do {
-            exit = gameMenu( user_id,scan,connection);
+            exit = gameMenu(scan);
 
         } while (!exit);
-        promptBeforeStartingGame(user_id, scan, connection);
+        promptBeforeStartingGame(scan);
 
     }
 
@@ -217,7 +236,7 @@ public class ClientRPC {
     * Output: true if the user chooses to quit, false otherwise
     * RemoteException if an error occurs during remote method invocation
     */
-    public static Boolean gameMenu(int user_id, Scanner scan, CrissCrossPuzzleServer connection ) throws RemoteException {
+    public static Boolean gameMenu(Scanner scan) throws RemoteException {
 
         System.out.println();
         System.out.println();
@@ -234,7 +253,7 @@ public class ClientRPC {
             case "L":
                 System.out.println();
                 System.out.print(" Please enter the letter your are guessing: ");
-                exit = guessLetterHandler(user_id, scan.next().charAt(0), connection);
+                exit = guessLetterHandler(scan.next().charAt(0));
                 //exit = readAndPrintResponseToGAME(user,createMessage("gl", scan.next()), user_id);
 
 
@@ -242,7 +261,7 @@ public class ClientRPC {
             case "W":
                 System.out.println();
                 System.out.print(" Please enter the word you would like to check: ");
-                exit = guessWordHandler(user_id, scan.next(), connection);
+                exit = guessWordHandler(scan.next());
                 // exit =readAndPrintResponseToGAME(user,createMessage("gw", scan.next()), user_id);
                 break;
             case "C":
@@ -270,7 +289,7 @@ public class ClientRPC {
      * Ouput: true - if game has ended, false otherwise
      * RemoteException if an error occurs during remote method invocation
      */
-    private static Boolean guessWordHandler(int user_id, String word, CrissCrossPuzzleServer connection) throws RemoteException {
+    private static Boolean guessWordHandler(String word) throws RemoteException {
         Boolean quit = false;
         boolean success = connection.guessWord(user_id, word);
         System.out.println(connection.displayGame(user_id));
@@ -302,7 +321,7 @@ public class ClientRPC {
      * Ouput: true - if game has ended, false otherwise
      * RemoteException if an error occurs during remote method invocation
      */
-    private static Boolean guessLetterHandler(int user_id, char letter, CrissCrossPuzzleServer connection) throws RemoteException {
+    private static Boolean guessLetterHandler(char letter) throws RemoteException {
         Boolean quit = false;
         boolean success = connection.guessLetter(user_id, letter);
         System.out.println(connection.displayGame(user_id));

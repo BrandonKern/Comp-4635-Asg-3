@@ -3,6 +3,12 @@ import java.rmi.RemoteException;
 
 public interface CrissCrossPuzzleServer extends Remote {
     
+
+
+
+    void keepMyNameWhileAlive(int user_id) throws RemoteException;
+    boolean heartBeat(int user_id) throws RemoteException;
+
     /**
      * Name: addWord   
      * Purpose: Adds a word to the WordRepo.
@@ -131,5 +137,5 @@ public interface CrissCrossPuzzleServer extends Remote {
      * Output: true if the user was successfully set as inactive, false otherwise
      * RemoteException if an error occurs during remote method invocation
      */
-    boolean setUserInactive(String user_id) throws RemoteException;
+    boolean setUserInactive(int user_id) throws RemoteException;
 }
