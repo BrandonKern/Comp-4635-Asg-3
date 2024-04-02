@@ -35,22 +35,26 @@ public class ClientRPC {
 
     public static void main(String [] args)
     {
-        try {
-            Scanner scan = new Scanner(System.in);
+        if( args.length > 0) {
+            try {
+                Scanner scan = new Scanner(System.in);
 
-            seqNum = 0;
-            user_id = loginPrompt(scan);
+                seqNum = 0;
+                user_id = loginPrompt(scan);
 
-            String Url = "rmi://" + InetAddress.getLocalHost().getHostAddress() + ":1099/CrissCrossPuzzleServer";
-            connection = (CrissCrossPuzzleServer) Naming.lookup(Url);
+                String Url = "rmi://" + InetAddress.getLocalHost().getHostAddress() + args[0];
+                connection = (CrissCrossPuzzleServer) Naming.lookup(Url);
 
-            connection.keepMyNameWhileAlive(user_id);
+                connection.keepMyNameWhileAlive(user_id);
 
-            primaryHandler(scan); //primaryHandler(scan,connection);
+                primaryHandler(scan); //primaryHandler(scan,connection);
 
 
-        } catch (UnknownHostException | MalformedURLException | NotBoundException | RemoteException e) {
-            throw new RuntimeException(e);
+            } catch (UnknownHostException | MalformedURLException | NotBoundException | RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            System.out.println(" The argument you passed was not valid");
         }
     }
 
