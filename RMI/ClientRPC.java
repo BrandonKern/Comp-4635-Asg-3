@@ -16,27 +16,29 @@ import java.util.concurrent.TimeUnit;
 
 public class ClientRPC {
     private static final int TIMELIMIT_SECONDS = 5;
+    static private int seqNum;
     static CrissCrossPuzzleServer connection;
     static int user_id;
+
 
     public void run () {
         while(true) {
             try {
                 TimeUnit.SECONDS.sleep(TIMELIMIT_SECONDS);
                     connection.heartBeat(user_id);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    break;
-                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                break;
+            }
         }
     }
 
     public static void main(String [] args)
     {
         try {
-
             Scanner scan = new Scanner(System.in);
 
+            seqNum = 0;
             user_id = loginPrompt(scan);
 
             String Url = "rmi://" + InetAddress.getLocalHost().getHostAddress() + ":1099/CrissCrossPuzzleServer";
@@ -138,21 +140,21 @@ public class ClientRPC {
                     System.out.println();
                     System.out.print(" Please enter the word you would like to add: ");
 
-                    System.out.println(connection.addWord(scan.next()));
+                    System.out.println(connection.addWord(scan.next(), user_id, seqNum));
                     break;
 
                 case "R":
                     System.out.println();
                     System.out.print(" Please enter the word you would like to remove: ");
 
-                    System.out.println(connection.removeWord(scan.next()));
+                    System.out.println(connection.removeWord(scan.next(), user_id, seqNum));
                     break;
 
                 case "C":
                     System.out.println();
                     System.out.print(" Please enter the word you would like to check: ");
 
-                    if (connection.checkWord(scan.next())) {
+                    if (connection.checkWord(scan.next(), user_id, seqNum)) {
                         System.out.println("The word does exist.");
                     } else {
                         System.out.println("The word does not exist.");
@@ -161,7 +163,7 @@ public class ClientRPC {
 
                 case "S":
 
-                    System.out.println(connection.checkScore(user_id));
+                    System.out.println(connection.checkScore(user_id, seqNum));
 
                     break;
 
@@ -188,7 +190,7 @@ public class ClientRPC {
      * RemoteException if an error occurs during remote method invocation
      */
     public static void primaryHandler( Scanner scan) throws RemoteException {
-        if (connection.checkUser(user_id)) {
+        if (connection.checkUser(user_id, seqNum)) {
             promptBeforeStartingGame(scan);
         }
 
@@ -211,8 +213,8 @@ public class ClientRPC {
         int[] arr = startGamePrompt(scan);
 
         //Sending start to server and reading/displaying game puzzle
-        connection.startGame(user_id,arr[0],arr[1]);
-        System.out.println(connection.displayGame(user_id));
+        connection.startGame(user_id,arr[0],arr[1], seqNum);
+        System.out.println(connection.displayGame(user_id, seqNum));
 
 
         Boolean exit = false;
@@ -267,7 +269,7 @@ public class ClientRPC {
             case "C":
                 System.out.println();
                 System.out.print(" Please enter the word you would like to check: ");
-                connection.checkWord(scan.next());
+                connection.checkWord(scan.next(), user_id, seqNum);
                 //sendRequestToServer(user,createMessage("cw", scan.next()));
                 break;
             case "Q":
@@ -291,21 +293,21 @@ public class ClientRPC {
      */
     private static Boolean guessWordHandler(String word) throws RemoteException {
         Boolean quit = false;
-        boolean success = connection.guessWord(user_id, word);
-        System.out.println(connection.displayGame(user_id));
+        boolean success = connection.guessWord(user_id, word, seqNum);
+        System.out.println(connection.displayGame(user_id, seqNum));
         if (success) {
             System.out.println("Correct guess");
-            if (connection.checkWin(user_id)) {
+            if (connection.checkWin(user_id, seqNum)) {
                 System.out.println("You have won the game!");
-                connection.updateUserScore(user_id);
-                connection.endGame(user_id);
+                connection.updateUserScore(user_id, seqNum);
+                connection.endGame(user_id, seqNum);
                 return true;
             }
         } else {
             System.out.println("Incorrect guess");
-            if (connection.checkLoss(user_id)) {
+            if (connection.checkLoss(user_id, seqNum)) {
                 System.out.println("You have lost the game!");
-                connection.endGame(user_id);
+                connection.endGame(user_id, seqNum);
                 return true;
             }
         }
@@ -323,21 +325,21 @@ public class ClientRPC {
      */
     private static Boolean guessLetterHandler(char letter) throws RemoteException {
         Boolean quit = false;
-        boolean success = connection.guessLetter(user_id, letter);
-        System.out.println(connection.displayGame(user_id));
+        boolean success = connection.guessLetter(user_id, letter, seqNum);
+        System.out.println(connection.displayGame(user_id, seqNum));
         if (success) {
             System.out.println("Correct guess");
-            if (connection.checkWin(user_id)) {
+            if (connection.checkWin(user_id, seqNum)) {
                 System.out.println("You have won the game!");
-                connection.updateUserScore(user_id);
-                connection.endGame(user_id);
+                connection.updateUserScore(user_id, seqNum);
+                connection.endGame(user_id, seqNum);
                 return true;
             }
         } else {
             System.out.println("Incorrect guess");
-            if (connection.checkLoss(user_id)) {
+            if (connection.checkLoss(user_id, seqNum)) {
                 System.out.println("You have lost the game!");
-                connection.endGame(user_id);
+                connection.endGame(user_id, seqNum);
                 return true;
             }
         }

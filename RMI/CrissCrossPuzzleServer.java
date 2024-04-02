@@ -16,7 +16,7 @@ public interface CrissCrossPuzzleServer extends Remote {
      * Output: a message indicating whether the word was successfully added or not
      * RemoteException if an error occurs during remote method invocation
      */
-    String addWord(String word) throws RemoteException;
+    String addWord(String word, int user_id, int seq) throws RemoteException;
     
     /**
      * Name: removeWord
@@ -25,7 +25,7 @@ public interface CrissCrossPuzzleServer extends Remote {
      * Output: a message indicating whether the word was successfully removed or not
      * RemoteException if an error occurs during remote method invocation
      */
-    String removeWord(String word) throws RemoteException;
+    String removeWord(String word, int user_id, int seq) throws RemoteException;
     
     /**
      * Name: checkWord
@@ -34,7 +34,7 @@ public interface CrissCrossPuzzleServer extends Remote {
      * Output: true if the word exists, false otherwise
      * RemoteException if an error occurs during remote method invocation
      */
-    boolean checkWord(String word) throws RemoteException;
+    boolean checkWord(String word, int user_id, int seq) throws RemoteException; //already idempotent?
     
     /**
     * NameL checkScore
@@ -43,7 +43,7 @@ public interface CrissCrossPuzzleServer extends Remote {
     * Output: a string representing the score of the user
     * RemoteException if an error occurs during remote method invocation
     */
-    String checkScore(int user_id) throws RemoteException;
+    String checkScore(int user_id, int seq) throws RemoteException; //already idempotent?
     
     /**
     * NameL checkUser
@@ -52,7 +52,7 @@ public interface CrissCrossPuzzleServer extends Remote {
     * Output: true if the user exists, false otherwise
     * RemoteException if an error occurs during remote method invocation
     */
-    boolean checkUser(int user_id) throws RemoteException;
+    boolean checkUser(int user_id, int seq) throws RemoteException; //already idempotent?
     
     /**
     * NameL updateUserScore
@@ -61,7 +61,7 @@ public interface CrissCrossPuzzleServer extends Remote {
     * Output: a message indicating whether the score was successfully updated or not
     * RemoteException if an error occurs during remote method invocation
     */
-    String updateUserScore(int user_id) throws RemoteException;
+    String updateUserScore(int user_id, int seq) throws RemoteException;
     
     /**
     * Name: endGame
@@ -70,7 +70,7 @@ public interface CrissCrossPuzzleServer extends Remote {
     * Output: a message indicating the result of the game ending process
     * RemoteException if an error occurs during remote method invocation
     */
-    boolean endGame(int user_id) throws RemoteException;
+    boolean endGame(int user_id, int seq) throws RemoteException;
     
     /**
      * Name: startGame
@@ -81,7 +81,7 @@ public interface CrissCrossPuzzleServer extends Remote {
      * Output: a message indicating the result of starting the new game
      * RemoteException if an error occurs during remote method invocation
      */
-    String startGame(int user_id, int difficulty, int failed_attempts) throws RemoteException;
+    String startGame(int user_id, int difficulty, int failed_attempts, int seq) throws RemoteException;
     
     /**
      * name: guessLetter
@@ -91,7 +91,7 @@ public interface CrissCrossPuzzleServer extends Remote {
      * Output: a message indicating the result of the letter guess
      * RemoteException if an error occurs during remote method invocation
      */
-    boolean guessLetter(int user_id, char letter) throws RemoteException;
+    boolean guessLetter(int user_id, char letter, int seq) throws RemoteException;
     
     /**
      * Name: guessWord
@@ -101,7 +101,7 @@ public interface CrissCrossPuzzleServer extends Remote {
      * Output: a message indicating the result of the word guess
      * RemoteException if an error occurs during remote method invocation
      */
-    boolean guessWord(int user_id, String word) throws RemoteException;
+    boolean guessWord(int user_id, String word, int seq) throws RemoteException;
     
     /**
      * Name: checkWin
@@ -110,7 +110,7 @@ public interface CrissCrossPuzzleServer extends Remote {
      * Ouptut: true if they have won the game, false otherwise
      * RemoteException if an error occurs during remote method invocation
      */
-    boolean checkWin(int user_id) throws RemoteException;
+    boolean checkWin(int user_id, int seq) throws RemoteException; //already idempotent?
     
     /*
      * Name: checkLose
@@ -119,7 +119,7 @@ public interface CrissCrossPuzzleServer extends Remote {
      * Ouptut: true if they have lost the game, false otherwise
      * RemoteException if an error occurs during remote method invocation
      */
-    boolean checkLoss(int user_id) throws RemoteException;
+    boolean checkLoss(int user_id, int seq) throws RemoteException; //already idempotent?
     
     /*
      * Name: displayGame
@@ -128,7 +128,7 @@ public interface CrissCrossPuzzleServer extends Remote {
      * Output: a string representation of the players game
      * RemoteException if an error occurs during remote method invocation
      */
-    String displayGame(int userId) throws RemoteException;
+    String displayGame(int userId, int seq) throws RemoteException;
     
     /**
      * Name: setUserInactive
