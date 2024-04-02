@@ -240,10 +240,10 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
         seqNumLock.readLock().lock();
 
         int oldSeq = clientSequenceNum.get(user_id);
-        
+
         seqNumLock.readLock().unlock();
 
-        if (seqNum > oldSeq) {
+        if (seqNum == 0) { //if (seqNum > oldSeq) { real impl this is test
             seqNumLock.writeLock().lock();
 
             clientSequenceNum.remove(user_id);
