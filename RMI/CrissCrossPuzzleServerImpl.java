@@ -79,7 +79,7 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
             e.printStackTrace();
         }
 		clientRecords.remove(user_id);
-        recordsLock.writeLock().lock();
+        recordsLock.writeLock().unlock();
 	}
 
     @Override
