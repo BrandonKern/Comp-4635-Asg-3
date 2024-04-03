@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 * Connects the client to the server, prompts the user for login information, and manages game interaction.
 */
 
-public class ClientRPC {
+public class ClientRPC implements Runnable {
     private static final int TIMELIMIT_SECONDS = 5;
     static private int seqNum;
     static CrissCrossPuzzleServer connection;
