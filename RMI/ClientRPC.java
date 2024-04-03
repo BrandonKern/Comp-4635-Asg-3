@@ -49,6 +49,7 @@ public class ClientRPC {
 
                 primaryHandler(scan); //primaryHandler(scan,connection);
 
+                (new Thread(new ClientRPC())).start();
 
             } catch (UnknownHostException | MalformedURLException | NotBoundException | RemoteException e) {
                 throw new RuntimeException(e);
