@@ -84,137 +84,196 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
 
     @Override
     public String addWord(String word, int user_id, int seq) throws RemoteException {
-        if (wordRepo.addWord(word)) {
-            return "Word added";
+        if (checkSeqNum(user_id, seq)) {
+            if (wordRepo.addWord(word)) {
+                return "Word added";
+            }
+            return "Word not added";
         }
-        return "Word not added";
+        System.out.println(user_id + " repeated call");
+        return "repeated call";
+
     }
 
     @Override
     public String removeWord(String word, int user_id, int seq) throws RemoteException {
-        if (wordRepo.deleteWord(word)) {
-            return "Word deleted";
-        }
-        return "Word not deleted";
+        if (checkSeqNum(user_id, seq)) {
+            if (wordRepo.deleteWord(word)) {
+                return "Word deleted";
+            }
+            return "Word not deleted";
+        }  
+        System.out.println(user_id + " repeated call"); 
+        return "repeated call";
     }
 
     @Override
     public boolean checkWord(String word, int user_id, int seq) throws RemoteException {
-        boolean check = wordRepo.checkWord(word);
-        System.out.println("Check word " + word + " is " + check);
-        return check;
+        if (checkSeqNum(user_id, seq)) {
+            boolean check = wordRepo.checkWord(word);
+            System.out.println("Check word " + word + " is " + check);
+            return check;
+        }   
+        System.out.println(user_id + " repeated call");
+        return true;
     }
 
     @Override
     public String checkScore(int user_id, int seq) throws RemoteException {
-        return userAccounts.checkUserScore(String.valueOf(user_id));
+        if (checkSeqNum(user_id, seq)) {
+            return userAccounts.checkUserScore(String.valueOf(user_id));
+        }  
+        System.out.println(user_id + " repeated call"); 
+        return "repeated call";
+
     }
 
     @Override
     public boolean checkUser(int user_id, int seq) throws RemoteException {
-        return userAccounts.checkUser(String.valueOf(user_id));
+        if (checkSeqNum(user_id, seq)) {
+            return userAccounts.checkUser(String.valueOf(user_id));
+        }
+        System.out.println(user_id + " repeated call");   
+        return true;   
     }
 
     @Override
     public String updateUserScore(int user_id, int seq) throws RemoteException {
-        return userAccounts.updateUserScore(String.valueOf(user_id));
+        if (checkSeqNum(user_id, seq)) {
+            return userAccounts.updateUserScore(String.valueOf(user_id));
+        }   
+        System.out.println(user_id + " repeated call");
+        return "repeated call";
     }
 
     @Override
     public boolean endGame(int user_id, int seq) throws RemoteException {
-        return pEndGame(user_id);
+        if (checkSeqNum(user_id, seq)) {
+            return pEndGame(user_id);
+        }   
+        System.out.println(user_id + " repeated call");
+        return true;   
     }
 
     @Override
     public String startGame(int user_id, int difficulty, int failed_attempts, int seq) throws RemoteException {
-        gameLock.writeLock().lock();
+        if (checkSeqNum(user_id, seq)) {
+            gameLock.writeLock().lock();
 
-        Game game = games.get(user_id);
-        if (game != null) {
-            if (games.remove(user_id) != null) {
-                System.out.println("deleted old game for user " + user_id);
+            Game game = games.get(user_id);
+            if (game != null) {
+                if (games.remove(user_id) != null) {
+                    System.out.println("deleted old game for user " + user_id);
+                } else {
+                    System.out.println("failure to start new game");
+                    return "failure to start new game";
+                }
+            }
+            game = new Game(failed_attempts, difficulty, wordRepo);
+            games.put(user_id, game);
+            gameLock.writeLock().unlock();
+    
+            if (games.get(user_id) != null) {
+                System.out.println("Successfully created");
             } else {
-                System.out.println("failure to start new game");
                 return "failure to start new game";
             }
-        }
-        game = new Game(failed_attempts, difficulty, wordRepo);
-        games.put(user_id, game);
-        gameLock.writeLock().unlock();
-
-        if (games.get(user_id) != null) {
-            System.out.println("Successfully created");
-        } else {
-            return "failure to start new game";
-        }
-        System.out.println("New Game made for user " + user_id);
-        game.displayPuzzle();
-        return game.toString();
+            System.out.println("New Game made for user " + user_id);
+            game.displayPuzzle();
+            return game.toString();
+        }   
+        System.out.println(user_id + " repeated call");
+        return "repeated call";
     }
 
     @Override
     public boolean guessLetter(int user_id, char letter, int seq) throws RemoteException {
-        gameLock.readLock().lock();
-        Game game = games.get(user_id);
-        gameLock.readLock().unlock();
-        if (game != null) {
-            return game.guessLetter(letter);
-        } else {
-            System.out.println("Game does not exist for this user");
-        }
-        return false;
+        if (checkSeqNum(user_id, seq)) {
+            gameLock.readLock().lock();
+            Game game = games.get(user_id);
+            gameLock.readLock().unlock();
+            
+            if (game != null) {
+                return game.guessLetter(letter);
+            } else {
+                System.out.println("Game does not exist for this user");
+            }
+            return false;
+        } 
+        System.out.println(user_id + " repeated call");
+        return true;   
     }
 
     @Override
     public boolean guessWord(int user_id, String word, int seq) throws RemoteException {
-        gameLock.readLock().lock();
-        Game game = games.get(user_id);
-        gameLock.readLock().unlock();
-        if (game != null) {
-            return game.guessWord(word);
-        } else {
-            System.out.println("Game does not exist for this user");
-        }
-        return false;
+        if (checkSeqNum(user_id, seq)) {
+            gameLock.readLock().lock();
+            Game game = games.get(user_id);
+            gameLock.readLock().unlock();
+            if (game != null) {
+                return game.guessWord(word);
+            } else {
+                System.out.println("Game does not exist for this user");
+            }
+            return false;
+        }   
+        System.out.println(user_id + " repeated call");
+        return true;   
+
     }
 
     @Override
     public boolean checkWin(int user_id, int seq) {
-        gameLock.readLock().lock();
-        Game game = games.get(user_id);
-        gameLock.readLock().unlock();
-        if (game != null) {
-            return game.checkWin();
-        } else {
-            System.out.println("Game does not exist for this user");
-        }
-        return false;
+        if (checkSeqNum(user_id, seq)) {
+            gameLock.readLock().lock();
+            Game game = games.get(user_id);
+            gameLock.readLock().unlock();
+            if (game != null) {
+                return game.checkWin();
+            } else {
+                System.out.println("Game does not exist for this user");
+            }
+            return false;
+        }   
+        System.out.println(user_id + " repeated call");
+        return false; 
+
     }
 
     @Override
     public boolean checkLoss(int user_id, int seq) {
-        gameLock.readLock().lock();
-        Game game = games.get(user_id);
-        gameLock.readLock().unlock();
-        if (game != null) {
-            return game.checkLoss();
-        } else {
-            System.out.println("Game does not exist for this user");
-        }
-        return false;
+        if (checkSeqNum(user_id, seq)) {
+            gameLock.readLock().lock();
+            Game game = games.get(user_id);
+            gameLock.readLock().unlock();
+            if (game != null) {
+                return game.checkLoss();
+            } else {
+                System.out.println("Game does not exist for this user");
+            }
+            return false;
+        }   
+        System.out.println(user_id + " repeated call");
+        return false; 
+
     }
 
     @Override
     public String displayGame(int user_id, int seq) throws RemoteException {
-        gameLock.readLock().lock();
-        Game game = games.get(user_id);
-        gameLock.readLock().unlock();
-        if (game != null) {
-            return game.toString();
-        } else {
-            System.out.println("Game does not exist for this user");
-        }
-        return "Game does not exist";
+        if (checkSeqNum(user_id, seq)) {
+            gameLock.readLock().lock();
+            Game game = games.get(user_id);
+            gameLock.readLock().unlock();
+            if (game != null) {
+                return game.toString();
+            } else {
+                System.out.println("Game does not exist for this user");
+            }
+            return "Game does not exist";
+        }   
+        System.out.println(user_id + " repeated call");
+        return "repeat call"; 
+
     }
 
     @Override
@@ -242,8 +301,8 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
         int oldSeq = clientSequenceNum.get(user_id);
 
         seqNumLock.readLock().unlock();
-
-        if (seqNum == 0) { //if (seqNum > oldSeq) { real impl this is test
+        System.out.println("Sequence num: " + seqNum);
+        if (seqNum > oldSeq) {
             seqNumLock.writeLock().lock();
 
             clientSequenceNum.remove(user_id);

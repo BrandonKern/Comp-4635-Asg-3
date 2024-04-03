@@ -39,7 +39,7 @@ public class ClientRPC implements Runnable {
             try {
                 Scanner scan = new Scanner(System.in);
 
-                seqNum = 0;
+                seqNum = 1;
                 user_id = loginPrompt(scan);
 
                 String Url = "rmi://" + InetAddress.getLocalHost().getHostAddress() + args[0];
