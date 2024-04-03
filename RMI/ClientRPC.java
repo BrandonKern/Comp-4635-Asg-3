@@ -33,14 +33,18 @@ public class ClientRPC implements Runnable {
         }
     }
 
+
+
     public static void main(String [] args)
     {
         if( args.length > 0) {
             try {
                 Scanner scan = new Scanner(System.in);
 
+
                 seqNum = 1;
                 user_id = loginPrompt(scan);
+
 
                 String Url = "rmi://" + InetAddress.getLocalHost().getHostAddress() + args[0];
                 connection = (CrissCrossPuzzleServer) Naming.lookup(Url);
@@ -144,22 +148,50 @@ public class ClientRPC implements Runnable {
                 case "A":
                     System.out.println();
                     System.out.print(" Please enter the word you would like to add: ");
-
-                    System.out.println(connection.addWord(scan.next(), user_id, seqNum));
+                    String addWord = scan.next();
+                    System.out.println(connection.addWord(addWord, user_id, seqNum));
+                   // calling duplicator
+                    Duplicator.runInterface(connection,connection -> {
+                        try {
+                            connection.addWord(addWord, user_id, seqNum);
+                        } catch (RemoteException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                    seqNum++;
                     break;
 
                 case "R":
                     System.out.println();
                     System.out.print(" Please enter the word you would like to remove: ");
+                    String deleteWord = scan.next();
+                    System.out.println(connection.removeWord(deleteWord, user_id, seqNum));
+                    // calling Duplicator
+                    Duplicator.runInterface(connection,connection -> {
+                        try {
+                            connection.removeWord(deleteWord, user_id, seqNum);
+                        } catch (RemoteException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                    seqNum++;
 
-                    System.out.println(connection.removeWord(scan.next(), user_id, seqNum));
                     break;
 
                 case "C":
                     System.out.println();
                     System.out.print(" Please enter the word you would like to check: ");
-
-                    if (connection.checkWord(scan.next(), user_id, seqNum)) {
+                    String checkWord = scan.next();
+                    if (connection.checkWord(checkWord, user_id, seqNum)) {
+                        // calling Duplicator
+                        Duplicator.runInterface(connection, connection -> {
+                            try {
+                                connection.checkWord(checkWord, user_id, seqNum);
+                            } catch (RemoteException e) {
+                                throw new RuntimeException(e);
+                            }
+                            seqNum++;
+                        });
                         System.out.println("The word does exist.");
                     } else {
                         System.out.println("The word does not exist.");
@@ -169,6 +201,15 @@ public class ClientRPC implements Runnable {
                 case "S":
 
                     System.out.println(connection.checkScore(user_id, seqNum));
+                    // Duplicator for checkScore
+                    Duplicator.runInterface(connection, connection -> {
+                        try {
+                            connection.checkScore(user_id, seqNum);
+                        } catch (RemoteException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                    seqNum++;
 
                     break;
 
@@ -196,6 +237,14 @@ public class ClientRPC implements Runnable {
      */
     public static void primaryHandler( Scanner scan) throws RemoteException {
         if (connection.checkUser(user_id, seqNum)) {
+            Duplicator.runInterface(connection, connection -> {
+                try {
+                    connection.checkUser(user_id, seqNum);
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            seqNum++;
             promptBeforeStartingGame(scan);
         }
 
@@ -219,7 +268,26 @@ public class ClientRPC implements Runnable {
 
         //Sending start to server and reading/displaying game puzzle
         connection.startGame(user_id,arr[0],arr[1], seqNum);
+        // calling duplicator
+        Duplicator.runInterface(connection, connection -> {
+            try {
+                connection.startGame(user_id,arr[0],arr[1], seqNum);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        seqNum++;
+
         System.out.println(connection.displayGame(user_id, seqNum));
+        //calling duplicator
+        Duplicator.runInterface(connection,connection -> {
+            try {
+                connection.displayGame(user_id, seqNum);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        seqNum++;
 
 
         Boolean exit = false;
@@ -274,7 +342,17 @@ public class ClientRPC implements Runnable {
             case "C":
                 System.out.println();
                 System.out.print(" Please enter the word you would like to check: ");
-                connection.checkWord(scan.next(), user_id, seqNum);
+                String checkWord = scan.next();
+                connection.checkWord(checkWord, user_id, seqNum);
+                //calling Duplicator
+                Duplicator.runInterface(connection, connection -> {
+                    try {
+                        connection.checkWord(checkWord, user_id, seqNum);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                seqNum++;
                 //sendRequestToServer(user,createMessage("cw", scan.next()));
                 break;
             case "Q":
@@ -299,20 +377,79 @@ public class ClientRPC implements Runnable {
     private static Boolean guessWordHandler(String word) throws RemoteException {
         Boolean quit = false;
         boolean success = connection.guessWord(user_id, word, seqNum);
+        // Duplicator for guessWord
+        Duplicator.runInterface(connection, connection -> {
+            try {
+                connection.guessWord(user_id, word, seqNum);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        seqNum++;
+
         System.out.println(connection.displayGame(user_id, seqNum));
+        // Duplicator for displayGame
+        Duplicator.runInterface(connection,connection -> {
+            try {
+                connection.displayGame(user_id, seqNum);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        seqNum++;
+
         if (success) {
             System.out.println("Correct guess");
             if (connection.checkWin(user_id, seqNum)) {
+                // Duplicator for CheckWin
+                Duplicator.runInterface(connection, connection -> {
+                    try {
+                        connection.checkWin(user_id, seqNum);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                seqNum++;
                 System.out.println("You have won the game!");
+
                 connection.updateUserScore(user_id, seqNum);
+                // Duplicator for UpdateUserScore
+                Duplicator.runInterface(connection, connection -> {
+                    try {
+                        connection.updateUserScore(user_id, seqNum);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                seqNum++;
                 connection.endGame(user_id, seqNum);
                 return true;
             }
         } else {
             System.out.println("Incorrect guess");
             if (connection.checkLoss(user_id, seqNum)) {
+                // Duplicator for CheckLoss
+                Duplicator.runInterface(connection, connection -> {
+                    try {
+                        connection.checkLoss(user_id, seqNum);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                seqNum++;
+
                 System.out.println("You have lost the game!");
+
                 connection.endGame(user_id, seqNum);
+                // Duplicator for endGame
+                Duplicator.runInterface(connection, connection -> {
+                    try {
+                        connection.endGame(user_id, seqNum);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                seqNum++;
                 return true;
             }
         }
@@ -331,20 +468,88 @@ public class ClientRPC implements Runnable {
     private static Boolean guessLetterHandler(char letter) throws RemoteException {
         Boolean quit = false;
         boolean success = connection.guessLetter(user_id, letter, seqNum);
+        // Calling Duplicator for guessLetter
+        Duplicator.runInterface(connection,connection -> {
+            try {
+                connection.guessLetter(user_id, letter, seqNum);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        seqNum++;
+
         System.out.println(connection.displayGame(user_id, seqNum));
+        // Calling Duplicator for displayGame
+        Duplicator.runInterface(connection, connection -> {
+            try {
+                connection.displayGame(user_id, seqNum);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        seqNum++;
+
         if (success) {
             System.out.println("Correct guess");
             if (connection.checkWin(user_id, seqNum)) {
+                // Duplicator for CheckWin
+                Duplicator.runInterface(connection, connection -> {
+                    try {
+                        connection.checkWin(user_id, seqNum);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                seqNum++;
+
                 System.out.println("You have won the game!");
                 connection.updateUserScore(user_id, seqNum);
+                // Duplicator for UpdateUserScore
+                Duplicator.runInterface(connection, connection -> {
+                    try {
+                        connection.updateUserScore(user_id, seqNum);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                seqNum++;
+
                 connection.endGame(user_id, seqNum);
+                // Duplicator for endGame
+                Duplicator.runInterface(connection, connection -> {
+                    try {
+                        connection.endGame(user_id, seqNum);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                seqNum++;
                 return true;
             }
         } else {
             System.out.println("Incorrect guess");
             if (connection.checkLoss(user_id, seqNum)) {
+                // Duplicator for CheckLoss
+                Duplicator.runInterface(connection, connection -> {
+                    try {
+                        connection.checkLoss(user_id, seqNum);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                seqNum++;
                 System.out.println("You have lost the game!");
+
                 connection.endGame(user_id, seqNum);
+                // Duplicator for endGame
+                Duplicator.runInterface(connection, connection -> {
+                    try {
+                        connection.endGame(user_id, seqNum);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                seqNum++;
                 return true;
             }
         }
