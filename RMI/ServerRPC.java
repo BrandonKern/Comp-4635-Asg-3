@@ -15,6 +15,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * ServerRPC class sets up a server using Remote Method Invocation (RMI).
  * It initializes a remote object representing the server, binds it to the RMI registry, and awaits client connections.
+ * It then sleeps for 10 seconds and checks which client are still connected and prunes client data for timed out / disconnected clients.
+ * Repeat last step
  */
 public class ServerRPC {
     private static final int TIMELIMIT_SECONDS = 10;
