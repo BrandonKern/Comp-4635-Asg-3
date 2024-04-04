@@ -1,3 +1,5 @@
+// take directly from tutorial, changed String name to int user_id for fit our assignment implementation
+
 import java.sql.Timestamp;
 
 public class ClientStateRecord {
