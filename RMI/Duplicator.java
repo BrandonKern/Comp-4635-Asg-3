@@ -14,9 +14,6 @@ public class Duplicator {
             // Call the method of the functional interface
             function.run(duplicate);
         }
-        else {
-            System.out.println(" \n Duplicator was not called ");
-        }
 
 
     }

@@ -51,9 +51,11 @@ public class ClientRPC implements Runnable {
 
                 connection.keepMyNameWhileAlive(user_id);
 
+                (new Thread(new ClientRPC())).start();
+
                 primaryHandler(scan); //primaryHandler(scan,connection);
 
-                (new Thread(new ClientRPC())).start();
+
 
             } catch (UnknownHostException | MalformedURLException | NotBoundException | RemoteException e) {
                 throw new RuntimeException(e);
@@ -218,6 +220,7 @@ public class ClientRPC implements Runnable {
                     break;
                 case "Q":
                     System.out.println("User quit is: " + connection.setUserInactive(user_id));
+                    System.exit(0);
                     break;
 
 
@@ -423,8 +426,18 @@ public class ClientRPC implements Runnable {
                 });
                 seqNum++;
                 connection.endGame(user_id, seqNum);
+                Duplicator.runInterface(connection, connection -> {
+                    try {
+                        connection.endGame(user_id, seqNum);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                seqNum++;
+                
                 return true;
             }
+            seqNum++;
         } else {
             System.out.println("Incorrect guess");
             if (connection.checkLoss(user_id, seqNum)) {
@@ -526,6 +539,7 @@ public class ClientRPC implements Runnable {
                 seqNum++;
                 return true;
             }
+            seqNum++;
         } else {
             System.out.println("Incorrect guess");
             if (connection.checkLoss(user_id, seqNum)) {

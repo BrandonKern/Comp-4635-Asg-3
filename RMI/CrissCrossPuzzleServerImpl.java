@@ -285,9 +285,11 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
         gameLock.writeLock().lock();
         Game game = games.get(user_id);
         if (game != null) {
+            gameLock.writeLock().unlock();
             return true;
         } else {
             if (games.remove(user_id) != null) {
+                gameLock.writeLock().unlock();
                 return true;
             }
         }
