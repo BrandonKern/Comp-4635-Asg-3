@@ -57,7 +57,6 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
 		ClientStateRecord r = clientRecords.get(user_id);
         
 		if (r != null) {
-            // System.out.println(user_id + " heart beat"); debugging tool
 			r.setIsActive(true);
 		}
         recordsLock.writeLock().unlock();
@@ -167,7 +166,6 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
                     System.out.println("deleted old game for user " + user_id);
                 } else {
                     System.out.println("failure to start new game");
-                    gameLock.writeLock().unlock();
                     return "failure to start new game";
                 }
             }
@@ -190,17 +188,13 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
 
     @Override
     public boolean guessLetter(int user_id, char letter, int seq) throws RemoteException {
-        System.out.println("Guess letter 0");
         if (checkSeqNum(user_id, seq)) {
-            System.out.println("Guess letter 1");
-            // gameLock.readLock().lock();
+            gameLock.readLock().lock();
             Game game = games.get(user_id);
-            // gameLock.readLock().unlock();
+            gameLock.readLock().unlock();
             
             if (game != null) {
-                Boolean status = game.guessLetter(letter);
-                System.out.println(game.toString());
-                return status;
+                return game.guessLetter(letter);
             } else {
                 System.out.println("Game does not exist for this user");
             }
@@ -212,16 +206,12 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
 
     @Override
     public boolean guessWord(int user_id, String word, int seq) throws RemoteException {
-        System.out.println("Guess word 0");
         if (checkSeqNum(user_id, seq)) {
-            System.out.println("Guess word 1");
-            // gameLock.readLock().lock();
+            gameLock.readLock().lock();
             Game game = games.get(user_id);
-            // gameLock.readLock().unlock();
+            gameLock.readLock().unlock();
             if (game != null) {
-                Boolean status = game.guessWord(word);
-                System.out.println(game.toString());
-                return status;
+                return game.guessWord(word);
             } else {
                 System.out.println("Game does not exist for this user");
             }
@@ -235,9 +225,9 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
     @Override
     public boolean checkWin(int user_id, int seq) {
         if (checkSeqNum(user_id, seq)) {
-            // gameLock.readLock().lock();
+            gameLock.readLock().lock();
             Game game = games.get(user_id);
-            // gameLock.readLock().unlock();
+            gameLock.readLock().unlock();
             if (game != null) {
                 return game.checkWin();
             } else {
@@ -253,9 +243,9 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
     @Override
     public boolean checkLoss(int user_id, int seq) {
         if (checkSeqNum(user_id, seq)) {
-            // gameLock.readLock().lock();
+            gameLock.readLock().lock();
             Game game = games.get(user_id);
-            // gameLock.readLock().unlock();
+            gameLock.readLock().unlock();
             if (game != null) {
                 return game.checkLoss();
             } else {
