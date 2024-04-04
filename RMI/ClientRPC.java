@@ -47,9 +47,11 @@ public class ClientRPC implements Runnable {
 
                 connection.keepMyNameWhileAlive(user_id);
 
+                (new Thread(new ClientRPC())).start();
+
                 primaryHandler(scan); //primaryHandler(scan,connection);
 
-                (new Thread(new ClientRPC())).start();
+                
 
             } catch (UnknownHostException | MalformedURLException | NotBoundException | RemoteException e) {
                 throw new RuntimeException(e);
@@ -299,15 +301,74 @@ public class ClientRPC implements Runnable {
     private static Boolean guessWordHandler(String word) throws RemoteException {
         Boolean quit = false;
         boolean success = connection.guessWord(user_id, word, seqNum);
+<<<<<<< Updated upstream
         System.out.println(connection.displayGame(user_id, seqNum));
         if (success) {
             System.out.println("Correct guess");
             if (connection.checkWin(user_id, seqNum)) {
+=======
+        // Duplicator for guessWord
+        Duplicator.runInterface(connection, connection -> {
+            try {
+                connection.guessWord(user_id, word, seqNum);
+                seqNum++;
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        seqNum++;
+
+        System.out.println(connection.displayGame(user_id, seqNum));
+        // Duplicator for displayGame
+        Duplicator.runInterface(connection,connection -> {
+            try {
+                connection.displayGame(user_id, seqNum);
+                seqNum++;
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        seqNum++;
+
+        if (success) {
+            System.out.println("Correct guess");
+            if (connection.checkWin(user_id, seqNum)) {
+                // Duplicator for CheckWin
+                Duplicator.runInterface(connection, connection -> {
+                    try {
+                        connection.checkWin(user_id, seqNum);
+                        seqNum++;
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                seqNum++;
+>>>>>>> Stashed changes
                 System.out.println("You have won the game!");
                 connection.updateUserScore(user_id, seqNum);
+<<<<<<< Updated upstream
                 connection.endGame(user_id, seqNum);
+=======
+                // Duplicator for UpdateUserScore
+                Duplicator.runInterface(connection, connection -> {
+                    try {
+                        connection.updateUserScore(user_id, seqNum);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                Duplicator.runInterface(connection, connection -> {
+                    try {
+                        connection.endGame(user_id, seqNum);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                seqNum++;
+>>>>>>> Stashed changes
                 return true;
             }
+            seqNum++;
         } else {
             System.out.println("Incorrect guess");
             if (connection.checkLoss(user_id, seqNum)) {
@@ -335,11 +396,26 @@ public class ClientRPC implements Runnable {
         if (success) {
             System.out.println("Correct guess");
             if (connection.checkWin(user_id, seqNum)) {
+<<<<<<< Updated upstream
+=======
+                // Duplicator for CheckWin
+                Duplicator.runInterface(connection, connection -> {
+                    try {
+                        connection.checkWin(user_id, seqNum);
+                        seqNum++;
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                seqNum++;
+
+>>>>>>> Stashed changes
                 System.out.println("You have won the game!");
                 connection.updateUserScore(user_id, seqNum);
                 connection.endGame(user_id, seqNum);
                 return true;
             }
+            seqNum++;
         } else {
             System.out.println("Incorrect guess");
             if (connection.checkLoss(user_id, seqNum)) {
