@@ -5,8 +5,21 @@ public interface CrissCrossPuzzleServer extends Remote {
     
 
 
-
+    /**
+     * Name: keepNameWhileAlive   
+     * Purpose: adds user to clientRecord hashMap
+     * Input: id of the user
+     * RemoteException if an error occurs during remote method invocation
+     */
     void keepMyNameWhileAlive(int user_id) throws RemoteException;
+
+    /**
+     * Name: heartBeat   
+     * Purpose: sets user to alive in clientRecord hashMap
+     * Input: id of the user
+     * Output: true if added correctly false if not
+     * RemoteException if an error occurs during remote method invocation
+     */
     boolean heartBeat(int user_id) throws RemoteException;
 
     /**

@@ -63,12 +63,19 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
 		return false;
 	}
 
-    //is not a remote function call (called by server)
+    /**
+     * Name: getEntrySet
+     * Purpose: returns all the clients in the clientRecords
+     */
     public Iterator<Map.Entry<Integer, ClientStateRecord>> getEntrySet () {
 		return clientRecords.entrySet().iterator();
 	}
 
-    //is not a remote function call (called by server)
+    /**
+     * Name: removeClientRecord
+     * Purpose: Removes client data from clientRecord hashmap
+     * user_id - the id of the client being removed
+     */
     public void removeClientRecord(int user_id) {
         recordsLock.writeLock().lock();
         try {
@@ -297,6 +304,15 @@ public class CrissCrossPuzzleServerImpl extends UnicastRemoteObject implements C
         return false;
     }
 
+    /**
+     * Name: checkSeqNum
+     * Purpose: checks whether the sequence number for a function call is valid.
+     * A valid sequence number is a sequence number that is greater that the last recorded sequence
+     * number for a given user
+     * user_id - the id of the user providing the sequence number
+     * seqNum - the sequence number provided by the client
+     * returns true if the seqNum is valid false if not
+     */
     private boolean checkSeqNum(int user_id, int seqNum) {
         seqNumLock.readLock().lock();
 
