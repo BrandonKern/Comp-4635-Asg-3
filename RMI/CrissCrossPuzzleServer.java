@@ -24,7 +24,9 @@ public interface CrissCrossPuzzleServer extends Remote {
     /**
      * Name: addWord   
      * Purpose: Adds a word to the WordRepo.
-     * Input: word the word to be added
+     * Input 1: word the word to be added
+     * Input 2: the client id
+     * Input 3: the sequence number
      * Output: a message indicating whether the word was successfully added or not
      * RemoteException if an error occurs during remote method invocation
      */
@@ -33,7 +35,9 @@ public interface CrissCrossPuzzleServer extends Remote {
     /**
      * Name: removeWord
      * Purpose: Removes a word from the WordRepo.
-     * Input: word the word to be removed
+     * Input 1: word the word to be removed
+     * Input 2: the client id
+     * Input 3: the sequence number
      * Output: a message indicating whether the word was successfully removed or not
      * RemoteException if an error occurs during remote method invocation
      */
@@ -42,7 +46,9 @@ public interface CrissCrossPuzzleServer extends Remote {
     /**
      * Name: checkWord
      * Purpose: Checks if a word exists in the WordRepo.
-     * Input: word the word to be checked
+     * Input 1: word the word to be checked
+     * Input 2: the client id
+     * Input 3: the sequence number
      * Output: true if the word exists, false otherwise
      * RemoteException if an error occurs during remote method invocation
      */
@@ -51,7 +57,8 @@ public interface CrissCrossPuzzleServer extends Remote {
     /**
     * NameL checkScore
     * Purpose: Checks the score of the user identified by the user_id.
-    * Input: user_id the ID of the user whose score is to be checked
+    * Input 1: user_id the ID of the user whose score is to be checked
+    * Input 2: the sequence number
     * Output: a string representing the score of the user
     * RemoteException if an error occurs during remote method invocation
     */
@@ -60,7 +67,8 @@ public interface CrissCrossPuzzleServer extends Remote {
     /**
     * NameL checkUser
     * Purpose: Checks if a user exists in the UserAccounts.
-    * Input: user_id the ID of the user to check
+    * Input 1: user_id the ID of the user to check
+    * Input 2: the sequence number
     * Output: true if the user exists, false otherwise
     * RemoteException if an error occurs during remote method invocation
     */
@@ -69,7 +77,8 @@ public interface CrissCrossPuzzleServer extends Remote {
     /**
     * NameL updateUserScore
     * Purpose: Updates the score of the user identified by the user_id.
-    * Input: user_id the ID of the user whose score is to be updated
+    * Input 1: user_id the ID of the user whose score is to be updated
+    * Input 2: the sequence number
     * Output: a message indicating whether the score was successfully updated or not
     * RemoteException if an error occurs during remote method invocation
     */
@@ -78,7 +87,8 @@ public interface CrissCrossPuzzleServer extends Remote {
     /**
     * Name: endGame
     * Purpose: Ends the game associated with the user identified by user_id.
-    * Input: user_id the ID of the user whose game is to be ended
+    * Input 1: user_id the ID of the user whose game is to be ended
+    * Input 2: the sequence number
     * Output: a message indicating the result of the game ending process
     * RemoteException if an error occurs during remote method invocation
     */
@@ -90,6 +100,7 @@ public interface CrissCrossPuzzleServer extends Remote {
      * Input 1: user_id the ID of the user for whom a new game is to be started
      * Input 2: difficulty the difficulty level of the game
      * Input 3: failed_attempts the number of failed attempts allowed in the game
+     * Input 4: the sequence number
      * Output: a message indicating the result of starting the new game
      * RemoteException if an error occurs during remote method invocation
      */
@@ -100,6 +111,7 @@ public interface CrissCrossPuzzleServer extends Remote {
      * Purpose: Allows the user identified by user_id to guess a letter in the current game.
      * Input 1: user_id the ID of the user guessing the letter
      * Input 2: letter the letter guessed by the user
+     * Input 3: the sequence number
      * Output: a message indicating the result of the letter guess
      * RemoteException if an error occurs during remote method invocation
      */
@@ -110,6 +122,7 @@ public interface CrissCrossPuzzleServer extends Remote {
      * Purpose: Allows the user identified by user_id to guess a word in the current game.
      * Input 1: user_id the ID of the user guessing the word
      * Input 2: word the word guessed by the user
+     * Input 3: the sequence number
      * Output: a message indicating the result of the word guess
      * RemoteException if an error occurs during remote method invocation
      */
@@ -119,6 +132,7 @@ public interface CrissCrossPuzzleServer extends Remote {
      * Name: checkWin
      * Purpose: Checks if the user identified by user_id has won their current game.
      * Input 1: user_id the ID of the user playing the game
+     * Input 2: the sequence number
      * Ouptut: true if they have won the game, false otherwise
      * RemoteException if an error occurs during remote method invocation
      */
@@ -128,6 +142,7 @@ public interface CrissCrossPuzzleServer extends Remote {
      * Name: checkLose
      * Purpose: Checks if the user identified by user_id has lost their current game.
      * Input 1: user_id the ID of the user playing the game
+     * Input 2: the sequence number
      * Ouptut: true if they have lost the game, false otherwise
      * RemoteException if an error occurs during remote method invocation
      */
@@ -137,6 +152,7 @@ public interface CrissCrossPuzzleServer extends Remote {
      * Name: displayGame
      * Purpose: to return a string representation of the current game
      * Input 1: user_id the ID of the user playing
+     * Input 2: the sequence number
      * Output: a string representation of the players game
      * RemoteException if an error occurs during remote method invocation
      */
