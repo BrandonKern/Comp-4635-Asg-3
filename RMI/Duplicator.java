@@ -10,7 +10,7 @@ public class Duplicator {
         double randomNum = Math.random();
 
         // Checks if the random number is greater than 0.5
-        if(randomNum >0.5) {
+        if(randomNum >=0.5) {
             // Call the method of the functional interface
             function.run(duplicate);
         }
