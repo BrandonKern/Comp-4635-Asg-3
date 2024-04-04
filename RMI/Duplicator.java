@@ -6,8 +6,18 @@ public class Duplicator {
      */
     static void runInterface( CrissCrossPuzzleServer duplicate, ConnectionFunction function)
     {
-        // Call the method of the functional interface
-       function.run(duplicate);
+        // Generate a random number between 0 and 1
+        double randomNum = Math.random();
+
+        // Checks if the random number is greater than 0.5
+        if(randomNum >0.5) {
+            // Call the method of the functional interface
+            function.run(duplicate);
+        }
+        else {
+            System.out.println(" \n Duplicator was not called ");
+        }
+
 
     }
 }
